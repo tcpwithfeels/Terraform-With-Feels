@@ -9,6 +9,8 @@ Initial practice and starting to get the hang of building and mapping out infras
 1a - Explain what IaC is
 1b - Describe advantages of IaC patterns
 
+![image](https://user-images.githubusercontent.com/125618256/224208448-d970610d-2cfd-419f-bd50-9f5af38eab92.png)
+
 # Phase 2: Ongoing - Double Linux Webserver with Load Balancer
 Multicloud deployment practice and making sure I understand the main concepts of Terraform workflow
 
