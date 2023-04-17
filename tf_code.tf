@@ -1,42 +1,47 @@
-# Define the provider
+# Specifies which provider plugin to use for the resources in the configuration.
 provider "azurerm" {
   features {}
 }
 
-# Create a resource group
+# Azure Resource Group
+# a resource group is a logical container that holds related resources such as virtual machines, storage accounts, virtual networks, and more. 
+# Resource groups are used to manage and organize resources for an application or environment, and they help simplify resource management and billing.
 resource "azurerm_resource_group" "TCP_Feels_RG" {
   name     = "TCP_Feels-resource-group"
   location = "eastus"
 }
 
-# Create virtual network
+# Virtual Network
 resource "azurerm_virtual_network" "TCP_Feels_VNET" {
   name                = "TCP_Feels-vnet"
   address_space       = ["10.16.0.0/16"]
-  location            = "${azurerm_resource_group.TCP_Feels.location}"
-  resource_group_name = "${azurerm_resource_group.TCP_Feels.name}"
+  location            = "${azurerm_resource_group.TCP_Feels_RG.location}"
+  resource_group_name = "${azurerm_resource_group.TCP_Feels_RG.name}"
 }
 
-# Create subnets
+# Subnets
+# Creating two subnets
 resource "azurerm_subnet" "TCP_Feels-SUBNET-1" {
   name                 = "TCP_Feels-subnet-1"
   address_prefix       = "10.16.4.0/24"
   virtual_network_name = "${azurerm_virtual_network.TCP_Feels.name}"
-  resource_group_name  = "${azurerm_resource_group.TCP_Feels.name}"
+  resource_group_name  = "${azurerm_resource_group.TCP_Feels_RG.name}"
 }
 
 resource "azurerm_subnet" "TCP_Feels-SUBNET-2" {
   name                 = "TCP_Feels-subnet-2"
   address_prefix       = "10.16.5.0/24"
-  virtual_network_name = "${azurerm_virtual_network.TCP_Feels.name}"
-  resource_group_name  = "${azurerm_resource_group.TCP_Feels.name}"
+  virtual_network_name = "${azurerm_virtual_network.TCP_Feels_VNET.name}"
+  resource_group_name  = "${azurerm_resource_group.TCP_Feels_RG.name}"
 }
 
-# Define the module to create the virtual machines
+# Module to create the virtual machines
+# Modules are great to reuse code especially if you're creating the same types of Virtual Machines
+# Module file 
 module "TCP_Feels_VMs" {
-  source                 = "./modules/vms"
-  resource_group_name    = "${azurerm_resource_group.TCP_Feels.name}"
-  location               = "${azurerm_resource_group.TCP_Feels.location}"
+  source                 = "./Feels_Modules"
+  resource_group_name    = "${azurerm_resource_group.TCP_Feels_RG.name}"
+  location               = "${azurerm_resource_group.TCP_Feels_RG.location}"
   subnet_ids             = ["${azurerm_subnet.TCP_Feels-1.id}", "${azurerm_subnet.TCP_Feels-2.id}"]
   vm_count               = 2
   vm_size                = "Standard_B1s"
@@ -46,24 +51,24 @@ module "TCP_Feels_VMs" {
 # Create public IP for load balancer
 resource "azurerm_public_ip" "TCP_Feels_PUB_IP" {
   name                = "TCP_Feels-lb-public-ip"
-  location            = "${azurerm_resource_group.TCP_Feels.location}"
-  resource_group_name = "${azurerm_resource_group.TCP_Feels.name}"
+  location            = "${azurerm_resource_group.TCP_Feels_RG.location}"
+  resource_group_name = "${azurerm_resource_group.TCP_Feels_RG.name}"
   allocation_method   = "Static"
 }
 
 # Create load balancer
 resource "azurerm_lb" "TCP_Feels_LB" {
   name                = "TCP_Feels-lb"
-  location            = "${azurerm_resource_group.TCP_Feels.location}"
-  resource_group_name = "${azurerm_resource_group.TCP_Feels.name}"
+  location            = "${azurerm_resource_group.TCP_Feels_RG.location}"
+  resource_group_name = "${azurerm_resource_group.TCP_Feels_RG.name}"
 
   frontend_ip_configuration {
     name                 = "TCP_Feels-lb-frontend-ip"
-    public_ip_address_id = "${azurerm_public_ip.TCP_Feels.id}"
+    public_ip_address_id = "${azurerm_public_ip.TCP_Feels_PUB_IP.id}"
   }
 
   dynamic "backend_address_pool" {
-    for_each = module.vms.vm_network_interface_ids
+    for_each = module.TCP_Feels_VMs.vm_network_interface_ids
     content {
       name = "backend-pool-${backend_address_pool.key}"
       backend_address {
@@ -73,7 +78,7 @@ resource "azurerm_lb" "TCP_Feels_LB" {
   }
 
   dynamic "probe" {
-    for_each = module.vms.vm_network_interface_ids
+    for_each = module.TCP_Feels_VMs.vm_network_interface_ids
     content {
       name                = "TCP_Feels-probe-${probe.key}"
       protocol            = "Tcp"
@@ -84,7 +89,7 @@ resource "azurerm_lb" "TCP_Feels_LB" {
   }
 
   dynamic "rule" {
-    for_each = module.vms.vm_network_interface_ids
+    for_each = module.TCP_Feels_VMs.vm_network_interface_ids
     content {
       name                   = "TCP_Feels-rule-${rule.key}"
       frontend_ip_configuration_name = "TCP_Feels-lb-frontend-ip"
