@@ -50,7 +50,7 @@ resource "azurerm_linux_virtual_machine" "TCP_Feels" {
   os_profile {
     computer_name  = "${var.vm_name_prefix}-${count.index}"
     admin_username = "adminuser"
-    admin_password = "Password1234!"
+    admin_password = "Passw0rd!"
   }
 
   os_profile_linux_config {
