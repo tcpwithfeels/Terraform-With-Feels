@@ -56,7 +56,10 @@ resource "azurerm_public_ip" "TCP_Feels_PUB_IP" {
   allocation_method   = "Static"
 }
 
-# Create load balancer
+# Load Balancer Creation
+# For each VM that is created, create two backend addresses
+# In additional create the same amount of probes in the backend address pool
+# For each VM, also create rules to allow TCP 80
 resource "azurerm_lb" "TCP_Feels_LB" {
   name                = "TCP_Feels-lb"
   location            = "${azurerm_resource_group.TCP_Feels_RG.location}"
@@ -84,7 +87,7 @@ resource "azurerm_lb" "TCP_Feels_LB" {
       protocol            = "Tcp"
       port                = 80
       interval_in_seconds = 5
-      number_of_probes    = 2
+      number_of_probes    = 1
     }
   }
 
