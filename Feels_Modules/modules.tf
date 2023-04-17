@@ -59,6 +59,9 @@ resource "azurerm_linux_virtual_machine" "TCP_Feels" {
 
   os_profile_linux_config {
     disable_password_authentication = false
-    custom_data                     = var.init_script
+    custom_data = "${file("${path.module}/init.sh")}\n" + <<EOF
+                #!/bin/bash
+                sudo sed -i 's/{{ COUNTVAR }}/${count.index}/g' /var/www/html/index.nginx-debian.html
+                EOF
   }
 }
