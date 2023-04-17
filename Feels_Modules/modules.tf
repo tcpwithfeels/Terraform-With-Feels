@@ -12,6 +12,10 @@ variable "vm_size" {
   default = "Standard_B1ls"
 }
 
+variable "init_script" {
+  default = file("${path.module}/init.sh")
+}
+
 resource "azurerm_network_interface" "TCP_Feels" {
   count               = var.vm_count
   name                = "${var.vm_name_prefix}-${count.index}-nic"
@@ -55,5 +59,6 @@ resource "azurerm_linux_virtual_machine" "TCP_Feels" {
 
   os_profile_linux_config {
     disable_password_authentication = false
+    custom_data                     = var.init_script
   }
 }

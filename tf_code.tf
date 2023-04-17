@@ -45,7 +45,7 @@ module "TCP_Feels_VMs" {
   subnet_ids             = ["${azurerm_subnet.TCP_Feels-1.id}", "${azurerm_subnet.TCP_Feels-2.id}"]
   vm_count               = 2
   vm_size                = "Standard_B1s"
-  vm_name_prefix         = "TCP_Feels-vm"
+  vm_name_prefix         = "TCP_Feels-VMs"
 }
 
 # Create public IP for load balancer
