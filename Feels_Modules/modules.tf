@@ -52,7 +52,6 @@ resource "azurerm_network_interface" "TCP_Feels-NIC" {
   name                = "${var.vm_name_prefix}-${count.index}-nic"
   location            = var.location
   resource_group_name = var.resource_group_name
-
   ip_configuration {
     name                          = "Internal-Network"
     subnet_id                     = var.subnet_ids[count.index % length(var.subnet_ids)]

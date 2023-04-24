@@ -40,7 +40,6 @@ module "TCP_Feels_VMs" {
   vm_size                = "Standard_B1s"
   vm_name_prefix         = "TCP_WITH_FEELS-"
   init_script = base64encode("./init.sh")
-
 }
 
 # "resource_group_name"
@@ -53,3 +52,7 @@ module "TCP_Feels_VMs" {
 # resource "azurerm_virtual_machine" "example" {
 #   for_each = var.vm_names
          
+# lb_backend_address_pool = {
+  #enable = true
+  #id = 
+#}
